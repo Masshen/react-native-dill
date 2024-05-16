@@ -2,7 +2,6 @@ import axios from "axios";
 import authServiceApi from "./authService";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
 import config from "./config";
-import userHelper from "../utils/helpers/userHelper";
 
 const http = axios.create({
   baseURL: config.URL_API,
@@ -27,6 +26,7 @@ http.interceptors.request.use(setAuthHeader);
 createAuthRefreshInterceptor(
   http,
   (failedRequest) => {
+    console.warn(failedRequest);
     //authServiceApi.logout();
     //userHelper.setLogout();
     return Promise.reject(`refresh token`);

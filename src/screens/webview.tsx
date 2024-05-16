@@ -22,6 +22,7 @@ export function WebviewScreen() {
   React.useEffect(() => {
     setUrl(route.params?.url);
     dispatch(setAppTitle(route.params.title ?? "Webview"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route]);
 
   React.useEffect(() => {
@@ -35,6 +36,7 @@ export function WebviewScreen() {
     );
 
     return () => backHandler.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

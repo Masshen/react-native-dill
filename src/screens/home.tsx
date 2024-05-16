@@ -57,7 +57,7 @@ function Section({ children, title }: SectionProps): React.JSX.Element {
   );
 }
 
-function App(): React.JSX.Element {
+export function HomeScreen(): React.JSX.Element {
   const isDarkMode = useColorScheme() === "dark";
 
   const backgroundStyle = {
@@ -80,6 +80,10 @@ function App(): React.JSX.Element {
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}
         >
+          <Section title="Appendices">
+            Structure created by
+            <Text style={styles.highlight}> Henock MASSAMBA</Text>
+          </Section>
           <Section title="Step One">
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
             screen and then come back to see your edits.
@@ -118,5 +122,3 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 });
-
-export default App;

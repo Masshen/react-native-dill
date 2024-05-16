@@ -8,9 +8,6 @@ class UserService extends Crud {
   get(id: string | number) {
     return this.axios.get(`${this.url}/${id}`);
   }
-  getDashboard(id: string | number) {
-    return this.axios.get(`all_data`);
-  }
   getAll() {
     return this.axios.get(`${this.url}`);
   }
@@ -38,13 +35,6 @@ class UserService extends Crud {
     return this.axios.patch(`${this.url}/${id}`, data, {
       headers: {
         "Content-Type": "application/merge-patch+json",
-      },
-    });
-  }
-  updatePhoto(id: string | number, data: any) {
-    return this.axios.post(`${this.url}/update/${id}`, data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
       },
     });
   }

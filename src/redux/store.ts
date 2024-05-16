@@ -1,4 +1,6 @@
-import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
+import { configureStore } from "@reduxjs/toolkit";
+import themeReducer from "./themeReducer";
+import userReducer from "./userReducer";
 const store = configureStore({
   reducer: {
     theme: themeReducer,

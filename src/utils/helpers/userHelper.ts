@@ -1,35 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { upperFirst, upperCase, isEmpty, toUpper } from "lodash";
 import userService from "../../services/userService";
-import {
-  setAllUsers,
-  setCurrentEdition,
-  setUserAdmin,
-  setUserProfil,
-  setUserResponsible,
-  setUserRoles,
-  setUserStudent,
-  setUserTeacher,
-} from "../../redux/userReducer";
-import levelService from "../../services/levelService";
-import { setAllLevels } from "../../redux/levelReducer";
-import bookService from "../../services/bookService";
-import { setAllBooks } from "../../redux/booksReducer";
-import subjectService from "../../services/subjectService";
-import { setAllSubjects } from "../../redux/subjectReducer";
-import programService from "../../services/programService";
-import {
-  setAllPrograms,
-  setCalendarPrograms,
-} from "../../redux/programReducer";
-import dateHelpers from "./dateHelpers";
-import programHelper from "./programHelper";
-import bookHelper from "./bookHelper";
-import studentHelper from "./studentHelper";
-import sectorService from "../../services/sectorService";
-import { setAllSectors } from "../../redux/sectorReducer";
-import schoolHelper from "./schoolHelper";
-import quizHelper from "./quizHelper";
+import { setAllUsers, setUserProfile } from "../../redux/userReducer";
 
 class UserHelper {
   private key: string = "@regard_user";
@@ -47,7 +19,7 @@ class UserHelper {
           item = response.data;
         })
         .catch(() => {});
-      dispatch(setUserProfil(item));
+      dispatch(setUserProfile(item));
     }
     await AsyncStorage.setItem(this.key, JSON.stringify(item));
     return item;
@@ -60,11 +32,11 @@ class UserHelper {
   setLogout(dispatch?: any) {
     AsyncStorage.removeItem(this.key);
     if (typeof dispatch === "function") {
-      dispatch(setUserProfil({}));
+      dispatch(setUserProfile({}));
     }
   }
 
-  async getUserProfil() {
+  async getUserProfile() {
     let item: any = await AsyncStorage.getItem(this.key);
     if (item != null) {
       const data = JSON.parse(item);
@@ -118,129 +90,10 @@ class UserHelper {
     return items;
   }
 
-  async getAllLevels(dispatch: any) {
-    let items: any[] = [];
-    await levelService
-      .getByKey(`order[promotion]=desc&order[reference]=asc`)
-      .then((response) => {
-        const data: any = levelService.getData(response);
-        items = data;
-        items = items.sort((a, b) => a.promotion - b.promotion);
-        if (typeof dispatch === "function") {
-          dispatch(setAllLevels(items ?? []));
-        }
-      })
-      .catch((reason) => {});
-    return items;
-  }
-
-  async getAllSubjects(dispatch: any) {
-    let items: any[] = [];
-    await subjectService
-      .getByKey(`order[title]=asc`)
-      .then((response) => {
-        const data: any = subjectService.getData(response);
-        items = data;
-        if (typeof dispatch === "function") {
-          dispatch(setAllSubjects(items ?? []));
-        }
-      })
-      .catch((reason) => {});
-    return items;
-  }
-
-  async getAllSectors(dispatch: any) {
-    let items: any[] = [];
-    await sectorService
-      .getByKey(`order[name]=asc`)
-      .then((response) => {
-        const data: any = sectorService.getData(response);
-        items = data;
-        if (typeof dispatch === "function") {
-          dispatch(setAllSectors(items ?? []));
-        }
-      })
-      .catch((reason) => {});
-    return items;
-  }
-
-  async getAllPrograms(dispatch: any) {
-    const user = await this.getUserProfil();
-    let query = `order[name]=asc`;
-    const level = user.students?.level?.uid;
-    const teachings: any[] = user.teacher?.teachings;
-    if (!isEmpty(level)) {
-      query += `&subject.level=${level}`;
-    } else if (teachings?.length > 0) {
-      teachings.forEach((p) => {
-        if (p.edition?.isActive) {
-          query += `&subject[]=${p.subject?.uid}`;
-        }
-      });
-    }
-    let items: any[] = [];
-    await programService
-      .getByKey(query)
-      .then((response) => {
-        const data: any = programService.getData(response);
-        items = data;
-        if (typeof dispatch === "function") {
-          const elements: any[] = programHelper.getProgramCalendar(items);
-          dispatch(setAllPrograms(items));
-          dispatch(setCalendarPrograms(elements));
-        }
-      })
-      .catch((reason) => {});
-    return items;
-  }
-
-  async initData(userUid: string, dispatch?: any) {
-    const user = await this.getUserProfil();
-    const level = user.students?.level?.uid;
-    const teachings: any[] = user.teacher?.teachings;
-    if (!isEmpty(level)) {
-      studentHelper.getStudentLevel(level, dispatch);
-      studentHelper.getStudentSubjects(level, dispatch);
-      studentHelper.getStudents(level, dispatch);
-    }
-    await schoolHelper.getAllPeriods(dispatch);
-    await schoolHelper.getAllFees(dispatch);
-    this.getAllUsers(dispatch);
-    this.getAllLevels(dispatch);
-    this.getAllSectors(dispatch);
-    bookHelper.getAllBooks(dispatch);
-    this.getAllSubjects(dispatch);
-    this.getAllPrograms(dispatch);
-    await this.getDashboard(dispatch);
-    //quiz
-    await quizHelper.getAllLevels(dispatch);
-    await quizHelper.getAllSubjects(dispatch);
-    await quizHelper.getQuizzes(dispatch);
-  }
-
-  async getDashboard(dispatch?: any) {
-    const user = await this.getUserProfil();
-    let item: any = {};
-    if (!isEmpty(user)) {
-      await userService
-        .getDashboard(`${user.uid}`)
-        .then((response) => {
-          const data: any = userService.getData(response);
-          item = data;
-          if (typeof dispatch === "function") {
-            const { roles, admin, student, responsible, teacher, edition } =
-              item;
-            dispatch(setUserRoles(roles ?? []));
-            dispatch(setUserAdmin(admin ?? {}));
-            dispatch(setUserStudent(student ?? {}));
-            dispatch(setUserTeacher(teacher ?? {}));
-            dispatch(setUserResponsible(responsible ?? {}));
-            dispatch(setCurrentEdition(edition ?? {}));
-          }
-        })
-        .catch(() => {});
-    }
-    return item;
+  async initData(dispatch?: any) {
+    const user = await this.getUserProfile();
+    console.warn(user);
+    console.warn(dispatch);
   }
 
   getTitle(user: any) {

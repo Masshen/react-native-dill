@@ -1,4 +1,3 @@
-import { Image } from "@rneui/base";
 import React from "react";
 import {
   ActivityIndicator,
@@ -15,13 +14,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { isEmpty } from "lodash";
 import userHelper from "../utils/helpers/userHelper";
 import authService from "../services/authService";
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import dateHelpers from "../utils/helpers/dateHelpers";
 
 export function SplashScreen() {
   const dim = useWindowDimensions();
   const navigation = useNavigation();
-  const user = useSelector((state: RootState) => state.user.profil);
+  const user = useSelector((state: RootState) => state.user.profile);
   const dispatch = useDispatch();
   const [loading, setLoading] = React.useState(false);
 
@@ -29,10 +28,12 @@ export function SplashScreen() {
     setTimeout(async () => {
       await onLoad();
     }, 2500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onLoad = React.useCallback(async () => {
     await init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function init() {
@@ -43,39 +44,39 @@ export function SplashScreen() {
     }
     const token = await authService.getToken();
     if (!isEmpty(token)) {
-      const decoded: any = jwt_decode(token ?? "");
+      const decoded: any = jwtDecode(token ?? "");
       const exp = decoded?.exp ?? null;
       if (exp > 0) {
         const date = new Date(exp * 1000);
         const hour = dateHelpers.getDifference(date, new Date(), "hour");
         if (hour < 1) {
-          navigation.dispatch(StackActions.replace("Login"));
+          navigation.dispatch(StackActions.replace("Home"));
           return;
         }
       }
     } else {
-      navigation.dispatch(StackActions.replace("Login"));
+      navigation.dispatch(StackActions.replace("Home"));
       return;
     }
     setLoading(true);
     if (isEmpty(user.uid)) {
-      const current = await userHelper.getUserProfil();
+      const current = await userHelper.getUserProfile();
       if (isEmpty(current)) {
-        navigation.dispatch(StackActions.replace("Login"));
+        navigation.dispatch(StackActions.replace("Home"));
       } else {
         await userHelper.setCurrentUser(current, dispatch);
-        await initData(current.uid);
+        await initData();
         navigation.dispatch(StackActions.replace("Home"));
       }
     } else {
-      await initData(user.uid);
+      await initData();
       navigation.dispatch(StackActions.replace("Home"));
     }
     setLoading(false);
   }
 
-  async function initData(uid: string) {
-    await userHelper.initData(uid, dispatch);
+  async function initData() {
+    await userHelper.initData(dispatch);
   }
 
   return (

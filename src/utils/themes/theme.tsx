@@ -1,7 +1,6 @@
 import { Theme } from "@react-navigation/native";
 import { defaultTheme as defaultElementTheme } from "@rneui/base";
 import { CreateThemeOptions } from "@rneui/themed";
-import React from "react";
 import {
   DefaultTheme,
   configureFonts,
