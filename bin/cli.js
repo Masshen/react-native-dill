@@ -13,7 +13,8 @@ const runCommand = (command) => {
   return true;
 };
 const repoName = process.argv[2] ?? null;
-const gitChekoutCommand = `git clone --depth 1 https://github.com/Masshen/react-native-dill.git ${repoName}`;
+console.log(`Name of app is ${repoName}`);
+const gitChekoutCommand = `git clone --depth 1 https://github.com/Masshen/react-native-dill ${repoName}`;
 const installDepsCommand = `cd ${repoName} && npm install`;
 
 console.log(`Clonning the repository with name ${repoName} `);
