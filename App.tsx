@@ -1,118 +1,109 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useDispatch, useSelector } from "react-redux";
+import { StatusBar, BackHandler } from "react-native";
+import { ThemeProvider as ElementThemeProvider } from "@rneui/themed";
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+  elementTheme,
+  navigatorTheme,
+  paperTheme,
+} from "./src/utils/themes/theme";
+import { NavigationContainer } from "@react-navigation/native";
+import { RootState } from "./src/redux/store";
+import { ThemeProvider } from "react-native-paper";
+import { RootStackParamList } from "./src/utils/routes/interface";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { colorPrimary } from "./src/utils/themes/colors";
+import NetInfo from "@react-native-community/netinfo";
+import { setConnection } from "./src/redux/themeReducer";
+import { ConfirmDialog } from "react-native-simple-dialogs";
+import { SplashScreen } from "./src/screens/splash";
+import { HomeScreen } from "./src/screens/home";
+import { WebviewScreen } from "./src/screens/webview";
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
+function App(): JSX.Element {
+  const mode = useSelector((state: RootState) => state.theme.mode);
+  const isConnected = useSelector(
+    (state: RootState) => state.theme.isConnected,
   );
-}
+  const title = useSelector((state: RootState) => state.user.title);
+  const dispatch = useDispatch();
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  React.useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      dispatch(setConnection(state.isConnected ?? false));
+    });
+  }, []);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  // React.useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setSeconds(seconds => seconds + 1);
+  //   }, 1000);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <React.Fragment>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        {/** @ts-ignore  */}
+        <ThemeProvider theme={paperTheme(mode)}>
+          <ElementThemeProvider theme={elementTheme(mode)}>
+            <NavigationContainer theme={navigatorTheme(mode)}>
+              <StatusBar
+                //backgroundColor={mode === 'dark' ? '#111' : '#f1f1f1'}
+                animated
+                backgroundColor={"#f1f1f1"}
+                //barStyle={mode === 'dark' ? 'dark-content' : 'light-content'}
+                barStyle="dark-content"
+              />
+              <Stack.Navigator
+                screenOptions={{
+                  animation: "slide_from_left",
+                  animationTypeForReplace: "push",
+                  // statusBarAnimation: 'slide',
+                  //statusBarColor: mode === 'dark' ? '#222' : '#f1f1f1',
+                  //statusBarStyle: mode === 'dark' ? 'light' : 'dark',
+                  statusBarColor: "#f1f1f1",
+                  statusBarStyle: "dark",
+                }}
+              >
+                <Stack.Screen
+                  name="Splash"
+                  component={SplashScreen}
+                  options={{
+                    animation: "slide_from_bottom",
+                    headerShown: false,
+                    statusBarHidden: true,
+                    statusBarColor: colorPrimary,
+                  }}
+                />
+                <Stack.Screen
+                  name="Home"
+                  component={HomeScreen}
+                  options={{
+                    animation: "flip",
+                    headerShown: false,
+                    statusBarHidden: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="Webview"
+                  component={WebviewScreen}
+                  options={{
+                    animation: "slide_from_bottom",
+                    headerShown: false,
+                    title: title,
+                  }}
+                />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </ElementThemeProvider>
+        </ThemeProvider>
+      </GestureHandlerRootView>
+    </React.Fragment>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
